@@ -1,57 +1,32 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 
-pragma solidity >=0.8.2 <0.9.0;
+pragma solidity 0.8.27;
 
-contract Product {
+import "./Product.sol";
 
-    string public name;
-    address public owner;
-    uint public timeBlock;
-    uint public rewardBalance;
-    uint public countReward;
-    bool isRewardPaid;
+contract BondManager is Product {
+  mapping(address => Bond[]) public userBonds;
+  uint _timeBlock;
+  address _owner;
 
-    constructor(
-        string memory _name,
-        uint _rewardBalance,
-        uint _countReward,
-        uint _timeBlock
-        ) {
-        name = _name;
-        owner = msg.sender;
-        rewardBalance = _rewardBalance;
-        timeBlock = _timeBlock;
-        countReward = _countReward;
-    }
+  constructor(string memory _name, uint _price, uint _rewardBalance, uint _countReward) Product(_name, _price, msg.sender, _rewardBalance, _countReward) {
+    // Initialize BondManager specific variables here if needed.
+  }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
-        _;
-    }
+  function buy(string memory _name, uint _price, uint _rewardBalance, uint _countReward) public returns (address) {
+    _owner = msg.sender;
+    Bond memory newProduct = Bond (
+      _name,
+      _price,
+      _owner,
+      _rewardBalance,
+      _countReward,
+      _timeBlock
+    );
+    userBonds[_owner].push(newProduct);
+  }
 
-    address to = 0x0000000000000000000000000000000000000000;
-
-    function reward() public onlyOwner {
-        require(block.timestamp >= timeBlock || isRewardPaid);
-        uint amount;
-        if (isRewardPaid) {
-            amount = rewardBalance;
-            isRewardPaid = true;
-        } else {
-            amount = rewardBalance / countReward;
-            rewardBalance -= amount;
-        }
-    }
-
-    function transferOwnership (address newOwner) public onlyOwner {
-        owner = newOwner;
-    }
-
-    function burn() public onlyOwner {
-        selfdestruct(payable(address(this)));
-    }
-
-    function getProductData() public view returns(string memory, address, uint, uint, uint) {
-        return (name, owner, timeBlock, rewardBalance, countReward);
-    } 
+  function transferBond(address from, address to, uint productIndex) public onlyOwner {
+    
+  }
 }
